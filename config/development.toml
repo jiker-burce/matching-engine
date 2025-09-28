@@ -1,0 +1,17 @@
+# 开发环境配置
+
+[logging]
+level = "debug"
+console = true
+json_format = false
+
+[monitoring]
+enabled = true
+metrics_port = 9090
+
+[engine]
+max_orders = 100000
+max_trades = 1000000
+max_orderbook_depth = 100
+enable_price_protection = false  # 开发环境关闭价格保护
+max_price_deviation = 50.0  # 开发环境放宽价格偏差限制

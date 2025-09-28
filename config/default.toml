@@ -1,0 +1,56 @@
+# 撮合引擎默认配置文件
+
+[server]
+host = "0.0.0.0"
+port = 8080
+api_prefix = "api/v1"
+ws_prefix = "ws"
+request_timeout = 30
+max_request_size = 1048576  # 1MB
+
+[server.cors]
+allowed_origins = ["*"]
+allowed_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+allowed_headers = ["*"]
+allow_credentials = true
+
+[logging]
+level = "info"
+console = true
+json_format = false
+
+[logging.rotation]
+strategy = "daily"
+max_size = 104857600  # 100MB
+max_age = 30  # 30 days
+max_files = 10
+
+[monitoring]
+enabled = true
+metrics_port = 9090
+metrics_path = "/metrics"
+health_path = "/health"
+enable_performance_metrics = true
+enable_business_metrics = true
+
+[engine]
+max_orders = 1000000
+max_trades = 10000000
+max_orderbook_depth = 1000
+enable_price_protection = true
+max_price_deviation = 10.0  # 10%
+enable_trade_limits = true
+max_trade_quantity = 1000.0
+max_daily_volume = 1000000.0
+supported_symbols = [
+    "BTCUSDT",
+    "ETHUSDT", 
+    "BNBUSDT",
+    "ADAUSDT",
+    "DOTUSDT",
+    "LINKUSDT",
+    "LTCUSDT",
+    "BCHUSDT",
+    "XLMUSDT",
+    "EOSUSDT"
+]

@@ -1,0 +1,33 @@
+# 生产环境配置
+
+[server]
+host = "0.0.0.0"
+port = 8080
+
+[logging]
+level = "info"
+console = false
+json_format = true
+file = "/var/log/matching_engine/matching_engine.log"
+
+[logging.rotation]
+strategy = "daily"
+max_size = 1073741824  # 1GB
+max_age = 7  # 7 days
+max_files = 5
+
+[monitoring]
+enabled = true
+metrics_port = 9090
+enable_performance_metrics = true
+enable_business_metrics = true
+
+[engine]
+max_orders = 10000000
+max_trades = 100000000
+max_orderbook_depth = 10000
+enable_price_protection = true
+max_price_deviation = 5.0  # 5%
+enable_trade_limits = true
+max_trade_quantity = 10000.0
+max_daily_volume = 100000000.0

@@ -1,0 +1,53 @@
+[package]
+name = "matching_engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web框架
+axum = "0.7"
+tokio = { version = "1.0", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# WebSocket
+tungstenite = "0.21"
+futures-util = "0.3"
+
+# 序列化
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# 日志
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# 配置管理
+config = "0.14"
+anyhow = "1.0"
+
+# 监控
+metrics = "0.22"
+metrics-exporter-prometheus = "0.13"
+
+# 时间处理
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# 原子操作
+atomic = "0.5"
+
+# 并发数据结构
+dashmap = "5.5"
+crossbeam = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
+tokio-test = "0.4"
+
+[[bench]]
+name = "matching_engine_bench"
+harness = false
