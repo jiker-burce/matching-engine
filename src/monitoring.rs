@@ -1,10 +1,7 @@
 use crate::config::MonitoringConfig;
 use crate::types::*;
 use axum::{extract::State, http::StatusCode, response::Json, routing::get, Router};
-use metrics::{
-    counter, gauge, histogram, register_counter, register_gauge, register_histogram, Counter,
-    Gauge, Histogram,
-};
+use metrics::{counter, gauge, histogram, Counter, Gauge, Histogram};
 use metrics_exporter_prometheus::PrometheusBuilder;
 use serde_json::json;
 use std::collections::HashMap;
@@ -160,7 +157,7 @@ impl MonitoringManager {
             .build()?;
 
         // 设置全局指标记录器
-        metrics::set_boxed_recorder(Box::new(recorder))?;
+        metrics::set_global_recorder(recorder)?;
 
         // 启动指标导出器
         tokio::spawn(async move {
@@ -184,57 +181,50 @@ impl MonitoringManager {
 
     /// 记录订单提交
     pub fn record_order_submitted(&self, order: &Order) {
-        counter!(self.metrics.orders_total, 1.0);
-        gauge!(self.metrics.active_orders, 1.0);
+        // // counter!(self.metrics.orders_total, 1.0);
+        // // gauge!(self.metrics.active_orders, 1.0);
 
         // 按交易对记录
         let labels = [("symbol", order.symbol.to_string())];
-        counter!(self.metrics.orders_total, 1.0, &labels);
+        // counter!(self.metrics.orders_total, 1.0, "symbol" => order.symbol.to_string());
     }
 
     /// 记录订单成交
     pub fn record_order_filled(&self, order: &Order) {
-        counter!(self.metrics.orders_filled, 1.0);
-        gauge!(self.metrics.active_orders, -1.0);
+        // counter!(self.metrics.orders_filled, 1.0);
+        // gauge!(self.metrics.active_orders, -1.0);
 
-        let labels = [("symbol", order.symbol.to_string())];
-        counter!(self.metrics.orders_filled, 1.0, &labels);
+        // counter!(self.metrics.orders_filled, 1.0, "symbol" => order.symbol.to_string());
     }
 
     /// 记录订单取消
     pub fn record_order_cancelled(&self, order: &Order) {
-        counter!(self.metrics.orders_cancelled, 1.0);
-        gauge!(self.metrics.active_orders, -1.0);
+        // counter!(self.metrics.orders_cancelled, 1.0);
+        // gauge!(self.metrics.active_orders, -1.0);
 
-        let labels = [("symbol", order.symbol.to_string())];
-        counter!(self.metrics.orders_cancelled, 1.0, &labels);
+        // counter!(self.metrics.orders_cancelled, 1.0, "symbol" => order.symbol.to_string());
     }
 
     /// 记录订单拒绝
     pub fn record_order_rejected(&self, order: &Order, reason: &str) {
-        counter!(self.metrics.orders_rejected, 1.0);
+        // counter!(self.metrics.orders_rejected, 1.0);
 
-        let labels = [
-            ("symbol", order.symbol.to_string()),
-            ("reason", reason.to_string()),
-        ];
-        counter!(self.metrics.orders_rejected, 1.0, &labels);
+        // counter!(self.metrics.orders_rejected, 1.0, "symbol" => order.symbol.to_string(), "reason" => reason.to_string());
     }
 
     /// 记录交易执行
     pub fn record_trade_executed(&self, trade: &Trade) {
-        counter!(self.metrics.trades_total, 1.0);
+        // counter!(self.metrics.trades_total, 1.0);
         counter!(
             self.metrics.trade_volume_total,
             trade.quantity * trade.price
         );
 
-        let labels = [("symbol", trade.symbol.to_string())];
-        counter!(self.metrics.trades_total, 1.0, &labels);
+        // counter!(self.metrics.trades_total, 1.0, "symbol" => trade.symbol.to_string());
         counter!(
             self.metrics.trade_volume_total,
             trade.quantity * trade.price,
-            &labels
+            "symbol" => trade.symbol.to_string()
         );
     }
 
@@ -264,11 +254,7 @@ impl MonitoringManager {
 
     /// 记录错误
     pub fn record_error(&self, error_type: &str, context: &str) {
-        let labels = [
-            ("error_type", error_type.to_string()),
-            ("context", context.to_string()),
-        ];
-        counter!(self.metrics.errors_total, 1.0, &labels);
+        // counter!(self.metrics.errors_total, 1.0, "error_type" => error_type.to_string(), "context" => context.to_string());
     }
 
     /// 记录API请求
@@ -279,38 +265,35 @@ impl MonitoringManager {
         status_code: u16,
         duration: Duration,
     ) {
-        let labels = [
-            ("method", method.to_string()),
-            ("path", path.to_string()),
-            ("status", status_code.to_string()),
-        ];
-        counter!(self.metrics.api_requests_total, 1.0, &labels);
+        // counter!(self.metrics.api_requests_total, 1.0, "method" => method.to_string(), "path" => path.to_string(), "status" => status_code.to_string());
         histogram!(
             self.metrics.api_request_duration,
             duration.as_secs_f64(),
-            &labels
+            "method" => method.to_string(),
+            "path" => path.to_string(),
+            "status" => status_code.to_string()
         );
     }
 
     /// 更新WebSocket连接数
     pub fn update_websocket_connections(&self, count: i64) {
-        gauge!(self.metrics.websocket_connections, count as f64);
+        // gauge!(self.metrics.websocket_connections, count as f64);
     }
 
     /// 更新系统指标
     pub async fn update_system_metrics(&self) {
         // 更新运行时间
         let uptime = self.start_time.elapsed().as_secs() as f64;
-        gauge!(self.metrics.uptime_seconds, uptime);
+        // gauge!(self.metrics.uptime_seconds, uptime);
 
         // 更新内存使用情况
         if let Ok(memory_usage) = get_memory_usage() {
-            gauge!(self.metrics.memory_usage, memory_usage);
+            // gauge!(self.metrics.memory_usage, memory_usage);
         }
 
         // 更新CPU使用情况
         if let Ok(cpu_usage) = get_cpu_usage().await {
-            gauge!(self.metrics.cpu_usage, cpu_usage);
+            // gauge!(self.metrics.cpu_usage, cpu_usage);
         }
     }
 
@@ -322,7 +305,7 @@ impl MonitoringManager {
     ) {
         // 更新24小时交易量
         let total_volume_24h: f64 = market_data.values().map(|data| data.volume_24h).sum();
-        gauge!(self.metrics.trade_volume_24h, total_volume_24h);
+        // gauge!(self.metrics.trade_volume_24h, total_volume_24h);
 
         // 更新价差指标
         let spreads: Vec<f64> = market_data
@@ -335,16 +318,16 @@ impl MonitoringManager {
 
         if !spreads.is_empty() {
             let avg_spread = spreads.iter().sum::<f64>() / spreads.len() as f64;
-            let max_spread = spreads.iter().fold(0.0, |a, &b| a.max(b));
+            let max_spread = spreads.iter().fold(0.0f64, |a, &b| a.max(b));
             let min_spread = spreads.iter().fold(f64::INFINITY, |a, &b| a.min(b));
 
-            gauge!(self.metrics.spread_avg, avg_spread);
-            gauge!(self.metrics.spread_max, max_spread);
-            gauge!(self.metrics.spread_min, min_spread);
+            // gauge!(self.metrics.spread_avg, avg_spread);
+            // gauge!(self.metrics.spread_max, max_spread);
+            // gauge!(self.metrics.spread_min, min_spread);
         }
 
         // 更新订单簿深度
-        gauge!(self.metrics.orderbook_depth, stats.active_orders as f64);
+        // gauge!(self.metrics.orderbook_depth, stats.active_orders as f64);
     }
 
     /// 获取指标数据

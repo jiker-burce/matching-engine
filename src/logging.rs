@@ -71,7 +71,9 @@ pub fn init_logging(
 // LoggingConfig 定义在 config.rs 中
 
 /// 高级日志初始化
-pub fn init_advanced_logging(config: LoggingConfig) -> Result<(), Box<dyn std::error::Error>> {
+pub fn init_advanced_logging(
+    config: crate::config::LoggingConfig,
+) -> Result<(), Box<dyn std::error::Error>> {
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&config.level));
 

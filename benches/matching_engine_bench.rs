@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
-use matching_engine::matching_engine::MatchingEngine;
-use matching_engine::orderbook::OrderBook;
-use matching_engine::types::*;
+use matching_engine::{
+    MatchingEngine, Order, OrderBook, OrderSide, OrderType, SafeOrderBook, Symbol, Trade,
+};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -16,7 +16,7 @@ fn bench_order_submission(c: &mut Criterion) {
             let symbol = Symbol::new("BTC", "USDT");
 
             b.iter(|| {
-                for i in 0..*size {
+                for i in 0..size {
                     let order = Order::new(
                         symbol.clone(),
                         if i % 2 == 0 {
@@ -131,7 +131,7 @@ fn bench_matching_performance(c: &mut Criterion) {
 
             // 预填充卖单
             let rt = tokio::runtime::Runtime::new().unwrap();
-            for i in 0..*size {
+            for i in 0..size {
                 let sell_order = Order::new(
                     symbol.clone(),
                     OrderSide::Sell,
@@ -147,7 +147,7 @@ fn bench_matching_performance(c: &mut Criterion) {
 
             b.iter(|| {
                 // 提交买单进行撮合
-                for i in 0..*size {
+                for i in 0..size {
                     let buy_order = Order::new(
                         symbol.clone(),
                         OrderSide::Buy,
@@ -181,7 +181,7 @@ fn bench_concurrent_performance(c: &mut Criterion) {
                 let symbol = Symbol::new("BTC", "USDT");
 
                 b.iter(|| {
-                    let handles: Vec<_> = (0..*num_threads)
+                    let handles: Vec<_> = (0..num_threads)
                         .map(|thread_id| {
                             let engine = engine.clone();
                             let symbol = symbol.clone();
