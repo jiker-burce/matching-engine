@@ -113,6 +113,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useTradingStore } from '../stores/trading'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
+import axios from 'axios'
 
 const tradingStore = useTradingStore()
 
@@ -232,50 +233,27 @@ const cancelOrder = async (orderId) => {
 const refreshOrders = async () => {
   console.log('🔄 刷新订单数据...')
   try {
-    // 先刷新市场数据（使用策略模式）
-    await tradingStore.loadMarketData()
-    console.log('✅ 市场数据已刷新')
+    // 调用真实的订单API
+    const response = await axios.get('/api/orders/user123', {
+      timeout: 5000
+    })
     
-    // 然后生成基于最新价格的订单数据
-    const mockOrders = generateMockOrders()
-    tradingStore.myOrders = mockOrders
-    console.log('✅ 订单数据已刷新')
+    if (response.data && response.data.orders) {
+      tradingStore.myOrders = response.data.orders
+      console.log('✅ 订单数据已刷新:', response.data.orders.length, '个订单')
+    } else {
+      tradingStore.myOrders = []
+      console.log('✅ 订单数据已刷新: 无订单')
+    }
   } catch (error) {
     console.error('❌ 刷新订单失败:', error)
-    // 如果失败，仍然使用模拟数据
-    const mockOrders = generateMockOrders()
-    tradingStore.myOrders = mockOrders
+    // 显示错误提示
+    ElMessage.error('服务器繁忙，请稍后再试')
+    throw error
   }
 }
 
-// 生成模拟订单数据
-const generateMockOrders = () => {
-  const orders = []
-  const basePrice = tradingStore.currentPrice || 45000
-  
-  for (let i = 0; i < 10; i++) {
-    const price = basePrice + (Math.random() - 0.5) * 1000
-    const quantity = Math.random() * 2 + 0.1
-    const side = Math.random() > 0.5 ? 'buy' : 'sell'
-    const type = Math.random() > 0.3 ? 'limit' : 'market'
-    const status = ['pending', 'filled', 'cancelled'][Math.floor(Math.random() * 3)]
-    
-    orders.push({
-      id: `order_${Date.now()}_${i}`,
-      symbol: 'BTC-USDT',
-      side: side,
-      type: type,
-      price: type === 'limit' ? price : null,
-      quantity: quantity,
-      filled_quantity: status === 'filled' ? quantity : (status === 'pending' ? Math.random() * quantity : 0),
-      status: status,
-      created_at: dayjs().subtract(i, 'hour').toISOString(),
-      updated_at: dayjs().subtract(i, 'hour').toISOString()
-    })
-  }
-  
-  return orders
-}
+// 注意：已移除模拟数据生成函数，只使用真实API数据
 
 onMounted(() => {
   refreshOrders()

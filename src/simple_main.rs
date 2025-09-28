@@ -40,6 +40,7 @@ pub fn create_simple_router(
         .route("/stats", get(get_engine_stats))
         .route("/ws", get(websocket_handler))
         .route("/submit_order", post(submit_order_handler))
+        .route("/orders/:user_id", get(get_user_orders))
         .route("/orderbook/:symbol", get(get_orderbook))
         .route("/trades/:symbol", get(get_trades))
         .route("/market_data/:symbol", get(get_market_data))
@@ -183,6 +184,15 @@ async fn get_trades(
     Ok(Json(mock_trades))
 }
 
+/// 获取用户订单
+async fn get_user_orders(
+    Path(user_id): Path<String>,
+    State(_state): State<SimpleApiState>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let mock_orders = generate_mock_user_orders(&user_id);
+    Ok(Json(mock_orders))
+}
+
 /// 获取市场数据
 async fn get_market_data(
     Path(symbol): Path<String>,
@@ -297,4 +307,41 @@ pub async fn run_simple_server() -> Result<()> {
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+/// 生成模拟用户订单数据
+fn generate_mock_user_orders(user_id: &str) -> serde_json::Value {
+    let mut orders = Vec::new();
+    let base_price = 45000.0;
+
+    for i in 0..10 {
+        let price = base_price + (i as f64 - 5.0) * 100.0;
+        let quantity = 0.1 + (i as f64 * 0.1);
+        let side = if i % 2 == 0 { "buy" } else { "sell" };
+        let status = match i % 3 {
+            0 => "pending",
+            1 => "filled",
+            _ => "cancelled",
+        };
+
+        orders.push(json!({
+            "id": format!("order_{}_{}", user_id, i),
+            "symbol": "BTC-USDT",
+            "side": side,
+            "type": "limit",
+            "price": price,
+            "quantity": quantity,
+            "filled_quantity": if status == "filled" { quantity } else { 0.0 },
+            "status": status,
+            "created_at": Utc::now().to_rfc3339(),
+            "updated_at": Utc::now().to_rfc3339()
+        }));
+    }
+
+    json!({
+        "user_id": user_id,
+        "orders": orders,
+        "total": orders.len(),
+        "timestamp": Utc::now().to_rfc3339()
+    })
 }

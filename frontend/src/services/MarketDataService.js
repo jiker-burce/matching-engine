@@ -16,8 +16,7 @@ class MarketDataService {
     this.strategies = [
       new BackendApiStrategy(axios),
       new BinanceApiStrategy(axios),
-      new CoinGeckoApiStrategy(axios),
-      new DefaultDataStrategy()
+      new CoinGeckoApiStrategy(axios)
     ]
     this.lastUsedStrategy = null
   }
@@ -57,8 +56,8 @@ class MarketDataService {
       }
     }
     
-    // 理论上不会到达这里，因为DefaultDataStrategy总是成功
-    throw new Error('所有数据源都失败了')
+    // 所有真实API都失败了
+    throw new Error('服务器繁忙，请稍后再试')
   }
   
   /**

@@ -40,13 +40,25 @@ export const useTradingStore = defineStore('trading', () => {
   
   // 初始化
   const initialize = async () => {
-    await loadMarketData()
-    await loadOrderBook()
-    await loadTradeHistory()
-    connectWebSocket()
+    try {
+      // 尝试加载市场数据，失败不影响其他功能
+      try {
+        await loadMarketData()
+      } catch (error) {
+        console.warn('市场数据加载失败，但不影响其他功能:', error.message)
+      }
+      
+      await loadOrderBook()
+      await loadTradeHistory()
+      connectWebSocket()
+    } catch (error) {
+      console.error('初始化失败:', error)
+      // 不提供备用数据，让用户知道服务器有问题
+      throw error
+    }
   }
   
-  // 加载市场数据（使用策略模式）
+  // 加载市场数据（只使用真实API）
   const loadMarketData = async () => {
     try {
       console.log('🚀 开始加载市场数据...')
@@ -58,18 +70,10 @@ export const useTradingStore = defineStore('trading', () => {
       console.log(`🎉 市场数据加载完成! 数据源: ${currentDataSource.value}`)
     } catch (error) {
       console.error('💥 获取市场数据失败:', error)
-      currentDataSource.value = 'Default Data (Simulated)'
-      // 使用默认数据作为最后的备用方案
-      console.log('🔄 使用备用默认数据...')
-      marketData.value = {
-        price: 45000,
-        price_change_24h: 0,
-        price_change_percentage_24h: 0,
-        total_volume: 25000000000,
-        high_24h: 46000,
-        low_24h: 44000,
-        timestamp: new Date().toISOString()
-      }
+      currentDataSource.value = '服务器繁忙'
+      
+      // 抛出错误，不提供备用数据
+      throw new Error('服务器繁忙，请稍后再试')
     }
   }
   

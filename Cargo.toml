@@ -44,6 +44,9 @@ atomic = "0.5"
 dashmap = "5.5"
 crossbeam = "0.8"
 
+# 数据库
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json"] }
+
 [dev-dependencies]
 criterion = "0.5"
 tokio-test = "0.4"

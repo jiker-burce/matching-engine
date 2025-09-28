@@ -22,8 +22,8 @@ class BackendApiStrategy extends DataSourceStrategy {
   }
   
   async fetchData() {
-    console.log('🔗 调用后端API: /market_data/BTC-USDT')
-    const response = await this.axios.get('/market_data/BTC-USDT', {
+    console.log('🔗 调用后端API: /api/market_data/BTC-USDT')
+    const response = await this.axios.get('/api/market_data/BTC-USDT', {
       timeout: 3000
     })
     
