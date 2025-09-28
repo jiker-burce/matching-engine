@@ -1,12 +1,12 @@
-use crate::orderbook::{SafeOrderBook};
+use crate::orderbook::SafeOrderBook;
 use crate::types::*;
+use chrono::Utc;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::Instant;
 use tokio::sync::broadcast;
 use tracing::info;
 use uuid::Uuid;
-use chrono::Utc;
 
 /// 撮合引擎核心实现
 #[derive(Debug)]
@@ -396,9 +396,9 @@ impl MatchingEngine {
             None => return,
         };
 
-        let best_bid = orderbook.best_bid();
-        let best_ask = orderbook.best_ask();
-        let spread = orderbook.spread();
+        let _best_bid = orderbook.best_bid();
+        let _best_ask = orderbook.best_ask();
+        let _spread = orderbook.spread();
 
         // 获取最近的交易来计算24小时数据
         let recent_trades = self.get_trades(Some(symbol), Some(1000));

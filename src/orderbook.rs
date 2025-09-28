@@ -32,7 +32,7 @@ impl OrderBook {
     }
 
     /// 添加订单到订单簿
-    pub fn add_order(&mut self, mut order: Order) -> Result<(), String> {
+    pub fn add_order(&mut self, order: Order) -> Result<(), String> {
         if order.symbol != self.symbol {
             return Err(format!(
                 "Order symbol {} does not match orderbook symbol {}",
